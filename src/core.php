@@ -2,7 +2,13 @@
 /** Core of the Admission Chatbot: database, schema, knowledge-base seeding, settings, auth, CSRF, audit. */
 date_default_timezone_set('Africa/Lagos');
 define('ROOT', dirname(__DIR__));
-define('DB_FILE', ROOT . '/data/chatbot.sqlite');
+if (getenv('VERCEL')) {
+    // Vercel's filesystem is read-only except /tmp: work on a per-instance copy of the bundled database.
+    define('DB_FILE', '/tmp/chatbot.sqlite');
+    if (!file_exists(DB_FILE) && file_exists(ROOT . '/data/chatbot.sqlite')) copy(ROOT . '/data/chatbot.sqlite', DB_FILE);
+} else {
+    define('DB_FILE', ROOT . '/data/chatbot.sqlite');
+}
 session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax']);
 if (session_status() === PHP_SESSION_NONE) session_start();
 
