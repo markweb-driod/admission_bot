@@ -42,7 +42,11 @@ if ($p === 'login') {
     echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Staff login</title><link rel="stylesheet" href="assets/style.css"></head><body><div class="auth"><div class="brand"><span class="logo">&#127891;</span><div><b>Admission Chatbot</b><small>Staff login</small></div></div>';
     if ($f) echo '<div class="flash ' . h($f[1]) . '">' . h($f[0]) . '</div>';
     echo '<div class="card"><form method="post">' . csrf_field() . '<label>Email address</label><input type="email" name="email" required autofocus><label>Password</label><input type="password" name="password" required><div class="actions"><button class="btn primary" style="width:100%">Sign in</button></div></form></div>
-    <div class="card"><style>.demo td{padding:6px 3px!important}.demo td+td{white-space:nowrap}</style><h2>Demo accounts</h2><table style="width:100%;font-size:12px" class="demo"><tr><td>System administrator</td><td>admin@admissionbot.test</td><td>admin123</td></tr><tr><td>Admission officer</td><td>officer@admissionbot.test</td><td>officer123</td></tr></table><p class="center"><a href="index.php">Back to the chatbot</a></p></div></div></body></html>';
+    <div class="card"><style>.demo-acc{display:block;width:100%;text-align:left;margin-bottom:8px}.demo-acc small{display:block;font-weight:400;color:var(--muted);font-size:12px;overflow-wrap:anywhere}</style><h2>Demo accounts</h2><p class="muted" style="margin:0 0 10px">Click an account to fill in the login form.</p>
+    <button type="button" class="btn demo-acc" data-email="admin@admissionbot.test" data-pass="admin123">System administrator<small>admin@admissionbot.test &middot; admin123</small></button>
+    <button type="button" class="btn demo-acc" data-email="officer@admissionbot.test" data-pass="officer123">Admission officer<small>officer@admissionbot.test &middot; officer123</small></button>
+    <p class="center"><a href="index.php">Back to the chatbot</a></p></div></div>
+    <script>document.querySelectorAll(".demo-acc").forEach(function (b) { b.onclick = function () { var f = document.querySelector("form"); f.email.value = b.dataset.email; f.password.value = b.dataset.pass; f.querySelector("button").focus(); }; });</script></body></html>';
     exit;
 }
 $active = $p;

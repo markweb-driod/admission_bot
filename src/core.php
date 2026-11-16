@@ -5,7 +5,7 @@ define('ROOT', dirname(__DIR__));
 if (getenv('VERCEL')) {
     // Vercel's filesystem is read-only except /tmp: work on a per-instance copy of the bundled database.
     define('DB_FILE', '/tmp/chatbot.sqlite');
-    if (!file_exists(DB_FILE) && file_exists(ROOT . '/data/chatbot.sqlite')) copy(ROOT . '/data/chatbot.sqlite', DB_FILE);
+    if (!file_exists(DB_FILE) && file_exists(ROOT . '/data/chatbot.sqlite') && copy(ROOT . '/data/chatbot.sqlite', DB_FILE)) refresh_demo_dates(DB_FILE);
 } else {
     define('DB_FILE', ROOT . '/data/chatbot.sqlite');
 }
@@ -14,6 +14,23 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
 const DEFAULTS = ['institution' => 'Nasarawa State University, Keffi', 'bot_name' => 'Admission Assistant', 'welcome' => 'Hello! I am the admission assistant. Ask me about admission requirements, UTME and Direct Entry, screening, acceptance, documents or fees.',
     'high' => '0.50', 'medium' => '0.32', 'low' => '0.20', 'contact_email' => 'admissions@example.edu.ng', 'contact_phone' => '', 'office_hours' => 'Monday to Friday, 8:00 am to 4:00 pm'];
+
+/** Moves every activity timestamp forward by whole days so the newest message falls on today and the demo dashboard always looks current. */
+function refresh_demo_dates(string $file): void
+{
+    $d = new PDO('sqlite:' . $file);
+    $last = $d->query('SELECT MAX(created) FROM messages')->fetchColumn();
+    if (!$last) return;
+    $days = (int)((strtotime(date('Y-m-d')) - strtotime(substr($last, 0, 10))) / 86400);
+    if ($days <= 0) return;
+    $cols = ['conversations' => ['started', 'last_activity'], 'messages' => ['created'], 'feedback' => ['created'], 'tickets' => ['created', 'updated'], 'unanswered' => ['last_asked']];
+    $d->beginTransaction();
+    foreach ($cols as $t => $cs) {
+        $set = implode(', ', array_map(fn($c) => "$c = datetime($c, '+$days days')", $cs));
+        $d->exec("UPDATE $t SET $set");
+    }
+    $d->commit();
+}
 
 function db(): PDO
 {
