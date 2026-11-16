@@ -47,7 +47,9 @@ try {
         q('UPDATE conversations SET last_activity = ? WHERE id = ?', [now(), $c['id']]);
         if ($res['level'] === 'fallback') {
             $n = Nlp::normalize($text);
-            q('INSERT INTO unanswered(query, normalized, last_asked) VALUES(?,?,?) ON CONFLICT(normalized) DO UPDATE SET count = count + 1, last_asked = excluded.last_asked', [$text, $n, now()]);
+            // Update-then-insert instead of an upsert: the SQLite on Vercel predates ON CONFLICT ... DO UPDATE.
+            if (!q('UPDATE unanswered SET count = count + 1, last_asked = ? WHERE normalized = ?', [now(), $n])->rowCount())
+                q('INSERT INTO unanswered(query, normalized, last_asked) VALUES(?,?,?)', [$text, $n, now()]);
         }
         json_out(['message_id' => $mid] + array_intersect_key($res, array_flip(['answer', 'level', 'intent', 'confidence', 'suggestions', 'followups', 'escalate', 'entry_id', 'latency_ms'])));
     }

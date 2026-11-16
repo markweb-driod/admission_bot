@@ -70,7 +70,7 @@ function setting(string $k): string
     if ($c === null) { $c = DEFAULTS; foreach (rows('SELECT k, v FROM settings') as $r) $c[$r['k']] = $r['v']; }
     return (string)($c[$k] ?? '');
 }
-function set_setting(string $k, string $v): void { q('INSERT INTO settings(k, v) VALUES(?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v', [$k, $v]); }
+function set_setting(string $k, string $v): void { q('INSERT OR REPLACE INTO settings(k, v) VALUES(?, ?)', [$k, $v]); }
 
 function seed(PDO $d): void
 {
