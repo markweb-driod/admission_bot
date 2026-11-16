@@ -1,5 +1,9 @@
 /* Dashboard charts of the administrator console. */
 (function () {
+    const btn = document.querySelector('.menu-btn');
+    if (btn) btn.onclick = () => { const open = btn.closest('.sidebar').classList.toggle('open'); btn.setAttribute('aria-expanded', open); };
+})();
+(function () {
     'use strict';
     if (!window.CHARTS || !window.Chart) return;
     const P = ['#0b6b4b', '#d4a017', '#2563eb', '#dc2626', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
