@@ -8,7 +8,7 @@ $u = me();
 
 function badge(string $s): string
 {
-    $c = ['open' => 'amber', 'in_progress' => 'blue', 'answered' => 'green', 'closed' => 'grey', 'published' => 'green', 'draft' => 'grey', 'pending' => 'amber', 'converted' => 'green', 'ignored' => 'grey', 'high' => 'green', 'medium' => 'blue', 'suggest' => 'amber', 'fallback' => 'red', 'smalltalk' => 'grey'][$s] ?? 'grey';
+    $c = ['open' => 'amber', 'in_progress' => 'blue', 'answered' => 'green', 'closed' => 'grey', 'published' => 'green', 'draft' => 'grey', 'pending' => 'amber', 'converted' => 'green', 'ignored' => 'grey', 'high' => 'green', 'medium' => 'blue', 'suggest' => 'amber', 'fallback' => 'red', 'smalltalk' => 'grey', 'active' => 'green', 'inactive' => 'grey'][$s] ?? 'grey';
     return '<span class="badge ' . $c . '">' . h(str_replace('_', ' ', ucfirst($s))) . '</span>';
 }
 function head(string $t, string $active = ''): void
@@ -191,7 +191,7 @@ if ($p === 'users') {
     }
     head('Staff Accounts', 'users');
     echo '<div class="two"><div class="card"><table><tr><th>Name</th><th>Role</th><th>Status</th><th></th></tr>';
-    foreach (rows('SELECT * FROM users ORDER BY id') as $x) echo '<tr><td><b>' . h($x['name']) . '</b><br><span class="muted">' . h($x['email']) . '</span></td><td>' . h(ucfirst($x['role'])) . '</td><td>' . badge($x['status'] === 'active' ? 'published' : 'draft') . '</td><td>' . ($x['id'] != $u['id'] ? '<form method="post">' . csrf_field() . '<input type="hidden" name="id" value="' . $x['id'] . '"><button name="do" value="' . ($x['status'] === 'active' ? 'deactivate' : 'activate') . '" class="btn sm">' . ($x['status'] === 'active' ? 'Deactivate' : 'Activate') . '</button></form>' : '') . '</td></tr>';
+    foreach (rows('SELECT * FROM users ORDER BY id') as $x) echo '<tr><td><b>' . h($x['name']) . '</b><br><span class="muted">' . h($x['email']) . '</span></td><td>' . h(ucfirst($x['role'])) . '</td><td>' . badge($x['status'] === 'active' ? 'active' : 'inactive') . '</td><td>' . ($x['id'] != $u['id'] ? '<form method="post">' . csrf_field() . '<input type="hidden" name="id" value="' . $x['id'] . '"><button name="do" value="' . ($x['status'] === 'active' ? 'deactivate' : 'activate') . '" class="btn sm">' . ($x['status'] === 'active' ? 'Deactivate' : 'Activate') . '</button></form>' : '') . '</td></tr>';
     echo '</table></div><form method="post" class="card">' . csrf_field() . '<input type="hidden" name="do" value="add"><h2>Add a staff account</h2><label>Name</label><input name="name" required><label>Email</label><input type="email" name="email" required><label>Role</label><select name="role"><option value="officer">Admission officer</option><option value="admin">System administrator</option></select><label>Password (min 8)</label><input type="password" name="password" minlength="8" required><div class="actions"><button class="btn primary">Create account</button></div></form></div>';
     foot(); exit;
 }
