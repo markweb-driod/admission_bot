@@ -17,6 +17,7 @@ const PHRASES = [
 ];
 const STOP = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'be', 'to', 'of', 'in', 'on', 'for', 'at', 'by', 'it', 'its', 'and', 'or', 'i', 'me', 'my', 'we', 'you', 'your', 'do', 'does', 'did', 'can', 'could', 'would', 'should', 'will', 'shall', 'please', 'pls', 'with', 'about', 'this', 'that', 'there', 'any', 'some', 'if', 'so', 'am', 'want', 'wants', 'need', 'like', 'know', 'tell', 'get', 'got', 'have', 'has', 'much', 'many', 'abeg', 'sir', 'madam', 'hello', 'hi', 'hey', 'then', 'than', 'also', 'just', 'what', 'how', 'when', 'where', 'which', 'who', 'whom', 'whose', 'why', 'must', 'may', 'might', 'been', 'being', 'into', 'out', 'up', 'from', 'after', 'before', 'new'];
 const KEEP = ['when', 'where', 'how', 'what', 'much', 'many'];
+const QWORDS = ['how', 'when', 'where'];   // question words kept as tokens but not evidence of a topic on their own
 
 class Nlp
 {
@@ -24,6 +25,7 @@ class Nlp
     public array $docs = [];         // list of [entryId, tokenVector(array term=>weight), norm]
     public array $idf = [];
     public array $vocab = [];
+    public array $kwAll = [];        // every stemmed keyword of the knowledge base
 
     public static function normalize(string $t): string
     {
@@ -78,7 +80,7 @@ class Nlp
     public function load(): self
     {
         $rowsE = rows("SELECT e.*, c.name AS category FROM entries e JOIN categories c ON c.id = e.category_id WHERE e.status = 'published'");
-        $this->entries = []; $this->vocab = [];
+        $this->entries = []; $this->vocab = []; $this->kwAll = [];
         foreach ($rowsE as $r) {
             foreach (preg_split('/[^a-z0-9]+/', self::normalize($r['question'] . ' ' . $r['variants'] . ' ' . $r['keywords'])) as $w) if (strlen($w) > 3) $this->vocab[$w] = true;
         }
@@ -87,6 +89,7 @@ class Nlp
             $variants = array_filter(array_map('trim', explode("\n", $r['variants'])));
             $kw = array_unique(array_map([self::class, 'stem'], array_filter(explode(' ', self::normalize($r['keywords'])))));
             $this->entries[$r['id']] = $r + ['variant_list' => $variants, 'kw' => $kw];
+            foreach ($kw as $k) $this->kwAll[$k] = true;
             foreach (array_merge([$r['question']], $variants) as $q) {
                 $tk = $this->tokens($q, false); if (!$tk) continue;
                 $raw[] = [$r['id'], $this->vector($tk)];
@@ -113,11 +116,15 @@ class Nlp
         $qv = $this->vector($tk); $qw = []; $qn = 0.0;
         foreach ($qv as $t => $c) { $x = (1 + log($c)) * ($this->idf[$t] ?? 0.0); if ($x > 0) { $qw[$t] = $x; $qn += $x * $x; } }
         $qn = sqrt($qn) ?: 1.0;
+        // Share of the query's content words that the knowledge base knows: a question made mostly of unknown words is off-topic.
+        $content = array_values(array_filter(array_unique($tk), fn($t) => !in_array($t, QWORDS, true)));
+        $coverage = $content ? count(array_filter($content, fn($t) => isset($this->idf[$t]) || isset($this->kwAll[$t]))) / count($content) : 0.0;
         $best = [];
         foreach ($this->docs as [$id, $w, $norm]) {
-            $dot = 0.0;
-            foreach ($qw as $t => $x) if (isset($w[$t])) $dot += $x * $w[$t];
-            $cos = $dot / ($qn * $norm);
+            $dot = 0.0; $topical = (bool)array_intersect($content, $this->entries[$id]['kw']);
+            foreach ($qw as $t => $x) if (isset($w[$t])) { $dot += $x * $w[$t]; if (!in_array($t, QWORDS, true)) $topical = true; }
+            if (!$topical) continue;   // sharing only "how", "when" or "where" (and no keyword) is not a match
+            $cos = $dot / ($qn * $norm) * sqrt($coverage);
             if ($cos > ($best[$id] ?? 0)) $best[$id] = $cos;
         }
         $out = [];

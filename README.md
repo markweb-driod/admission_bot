@@ -14,6 +14,7 @@ Demo staff accounts: `admin@admissionbot.test` / `admin123` (administrator), `of
 
 ## Tools
 - `php tools/seed_traffic.php` creates simulated demonstration traffic.
+- `php tools/import_kb.php` adds new or changed entries from `src/kb_seed.php` to an existing database, keeping traffic and ratings.
 - `php tools/evaluate.php` evaluates accuracy on the development and held-out sets.
 
 ## Notes

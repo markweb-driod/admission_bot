@@ -25,6 +25,12 @@ return [
         ['admisison requirments', 'ADM-010'], ['how to aply for admision', 'ADM-001'], ['accpetance fee', 'ADM-032'],
         ['who won the world cup', null], ['what is the weather in keffi', null], ['recommend a good phone', null], ['how do i cook rice', null],
         ['what is the capital of france', null], ['tell me a joke', null], ['how to hack a website', null], ['best football team in nigeria', null],
+        // NSUK-specific questions, added with the NSUK knowledge base entries.
+        ['what is nsuk all about', 'NSUK-100'], ['which year was nsuk founded', 'NSUK-100'], ['where is nsuk main campus', 'NSUK-101'], ['does nsuk have a campus in lafia', 'NSUK-101'],
+        ['how many faculties are in nsuk', 'ADM-082'], ['is there faculty of computing in nsuk', 'NSUK-103'], ['can i do medicine and surgery at nsuk', 'NSUK-104'], ['agricultural courses in nsuk', 'NSUK-105'],
+        ['does nsuk have engineering', 'NSUK-106'], ['nsuk law faculty requirements', 'NSUK-107'], ['what is the nsuk portal', 'ADM-004'], ['i chose nsuk as second choice', 'NSUK-109'],
+        ['masters programme in nsuk', 'NSUK-110'], ['does nsuk have distance learning', 'NSUK-111'], ['nsuk ijmb programme', 'NSUK-112'], ['nsuk hostel accommodation', 'ADM-071'],
+        ['how to pay school fees in nsuk', 'ADM-061'], ['is nsuk recognized by nuc', 'NSUK-115'], ['what is nsuk cut off mark', 'ADM-013'], ['nsuk email address', 'ADM-080'],
     ],
     'heldout' => [
         ['i want to know how to apply to this school', 'ADM-001'], ['procedure for getting admitted', 'ADM-001'], ['how do i go about admission', 'ADM-001'],
